@@ -1,7 +1,7 @@
 {
     "overlays": [
         { "name": "Player", "path": "/skin-overlay/assets/player-overlay.png" },
-        { "name": "Worker", "path": "/skin-overlay/assets/worker-overlay.png" },
+        { "name": "Worker", "path": "/skin-overlay/assets/worker-owerlay.png" },
         { "name": "Gamemaster", "path": "/skin-overlay/assets/gamemaster-overlay.png" }
     ]
 }
