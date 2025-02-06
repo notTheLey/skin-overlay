@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Skin Viewer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Minecraft Skin Viewer</h1>
+        <label for="username">Minecraft Name:</label>
+        <input type="text" id="username" placeholder="Minecraft Name">
+        
+        <label for="skinType">Wähle Skin Typ:</label>
+        <select id="skinType">
+            <option value="player">Spieler</option>
+            <option value="team">Teamler</option>
+        </select>
+        
+        <button onclick="getSkin()">Skin anzeigen</button>
+        
+        <div id="skinDisplay">
+            <img id="skinImage" src="" alt="Minecraft Skin">
+        </div>
+        
+        <button id="downloadBtn" style="display:none;" onclick="downloadSkin()">Herunterladen</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
