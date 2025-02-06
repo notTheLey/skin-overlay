@@ -3,108 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minecraft Skin Viewer - Squid Game</title>
+    <title>Minecraft Skin Overlay</title>
     <style>
-        body {
-            background-color: #121212;
-            color: #ff007f;
-            font-family: Arial, sans-serif;
-            text-align: center;
-        }
-        .container {
-            margin-top: 50px;
-        }
-        input, select, button {
-            padding: 10px;
-            margin: 10px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        button {
-            background-color: #ff007f;
-            color: white;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #d6006b;
-        }
-        canvas {
-            margin-top: 20px;
-            border: 2px solid #ff007f;
-        }
+        body { font-family: Arial, sans-serif; text-align: center; }
+        canvas { margin-top: 10px; border: 1px solid #000; }
     </style>
 </head>
 <body>
-
-    <div class="container">
-        <h1>Minecraft Skin Viewer - Squid Game</h1>
-        <input type="text" id="playerName" placeholder="Minecraft-Name eingeben">
-        <select id="overlayType">
-            <option value="player">Spieler</option>
-            <option value="worker">Teamler</option>
-        </select>
-        <button onclick="loadSkin()">Skin anzeigen</button>
-        <button onclick="downloadSkin()">Herunterladen</button>
-        <br>
-        <canvas id="skinCanvas" width="64" height="64"></canvas>
-    </div>
-
+    <h1>Minecraft Skin Overlay Generator</h1>
+    <input type="text" id="playerName" placeholder="Spielername eingeben">
+    <button onclick="loadSkin()">Skin Laden</button>
+    <select id="overlaySelect"></select>
+    <canvas id="canvas" width="64" height="64"></canvas>
+    
     <script>
+        async function fetchOverlays() {
+            const response = await fetch('/skin-overlay/assets/config.json');
+            const config = await response.json();
+            const select = document.getElementById('overlaySelect');
+            select.innerHTML = '';
+            config.overlays.forEach(overlay => {
+                let option = document.createElement('option');
+                option.value = overlay.path;
+                option.textContent = overlay.name;
+                select.appendChild(option);
+            });
+        }
+        
         async function loadSkin() {
             const playerName = document.getElementById('playerName').value;
-            const overlayType = document.getElementById('overlayType').value;
-            const canvas = document.getElementById('skinCanvas');
+            if (!playerName) return alert('Spielername eingeben!');
+            const response = await fetch(`https://api.mojang.com/users/profiles/minecraft/${playerName}`);
+            if (!response.ok) return alert('Spieler nicht gefunden!');
+            const { id } = await response.json();
+            const skinUrl = `https://crafatar.com/skins/${id}`;
+            drawSkinWithOverlay(skinUrl);
+        }
+        
+        async function drawSkinWithOverlay(skinUrl) {
+            const overlayPath = document.getElementById('overlaySelect').value;
+            const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
-
-            if (!playerName) {
-                alert("Bitte gib einen Minecraft-Namen ein!");
-                return;
-            }
-
-            // Mojang API: Spieler-UUID abrufen
-            try {
-                const uuidResponse = await fetch(`https://api.mojang.com/users/profiles/minecraft/${playerName}`);
-                if (!uuidResponse.ok) throw new Error("Spieler nicht gefunden!");
-                const { id: uuid } = await uuidResponse.json();
-
-                // Skin-URL abrufen
-                const sessionResponse = await fetch(`https://sessionserver.mojang.com/session/minecraft/profile/${uuid}`);
-                const sessionData = await sessionResponse.json();
-                const base64Skin = sessionData.properties.find(p => p.name === "textures").value;
-                const skinURL = JSON.parse(atob(base64Skin)).textures.SKIN.url;
-
-                // Skin & Overlay laden
-                const skinImage = new Image();
-                const overlayImage = new Image();
-
-                skinImage.src = skinURL;
-                overlayImage.src = `/skin-overlay/assets/${overlayType}-overlay.png`;
-
-                await Promise.all([
-                    new Promise(resolve => skinImage.onload = resolve),
-                    new Promise(resolve => overlayImage.onload = resolve)
-                ]);
-
-                // Kopf zeichnen (Skin-Kopf ist 8x8 auf Position 8x8)
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(skinImage, 8, 8, 8, 8, 0, 0, 64, 64);
-                ctx.drawImage(overlayImage, 0, 0, 64, 64);
-                
-            } catch (error) {
-                alert("Fehler: " + error.message);
-            }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const skin = new Image();
+            skin.crossOrigin = 'anonymous';
+            skin.src = skinUrl;
+            skin.onload = () => {
+                ctx.drawImage(skin, 8, 8, 16, 16, 0, 0, 64, 64);
+                const overlay = new Image();
+                overlay.crossOrigin = 'anonymous';
+                overlay.src = overlayPath;
+                overlay.onload = () => ctx.drawImage(overlay, 0, 0, 64, 64);
+            };
         }
-
-        function downloadSkin() {
-            const canvas = document.getElementById('skinCanvas');
-            const link = document.createElement('a');
-            link.download = 'minecraft_head.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-        }
+        
+        fetchOverlays();
     </script>
-
 </body>
 </html>
+
 
