@@ -48,14 +48,31 @@
 <body>
     <h1>Minecraft Skin Overlay Generator</h1>
     <button onclick="loadSkin()">Skin Hochladen</button>
-    <select id="overlaySelect">
-        <option value="assets/overlay1.png">Overlay 1</option>
-        <option value="assets/overlay2.png">Overlay 2</option>
-    </select>
+    <select id="overlaySelect"></select>
     <div id="loader" class="loader"></div>
     <canvas id="canvas" width="64" height="64"></canvas>
 
     <script>
+        // Overlays aus der config.json laden
+        async function fetchOverlays() {
+            try {
+                const response = await fetch('assets/config.json');
+                if (!response.ok) throw new Error('Fehler beim Laden der Overlays');
+                const config = await response.json();
+                const select = document.getElementById('overlaySelect');
+
+                // Overlays ins Dropdown-Menü einfügen
+                config.overlays.forEach(overlay => {
+                    const option = document.createElement('option');
+                    option.value = overlay.path;
+                    option.textContent = overlay.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
         // Funktion zum Laden des Skins
         async function loadSkin() {
             // Dateiauswahl-Dialog erstellen
@@ -113,6 +130,9 @@
             // Overlay auf den Canvas zeichnen
             ctx.drawImage(overlay, 0, 0, 64, 64);
         }
+
+        // Overlays beim Laden der Seite abrufen
+        fetchOverlays();
     </script>
 </body>
 </html>
