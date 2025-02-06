@@ -117,7 +117,7 @@
 
         async function loadConfig() {
             try {
-                const response = await fetch('skin-overlay/assets/config.json');
+                const response = await fetch('/skin-overlay/assets/config.json');
                 if (!response.ok) throw new Error(`HTTP Fehler! Status: ${response.status}`);
                 config = await response.json();
                 console.log("Config geladen:", config);
