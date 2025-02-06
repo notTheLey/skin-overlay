@@ -4,10 +4,23 @@ fetch('assets/config.json')
     .then(response => response.json())
     .then(data => {
         config = data;
+        loadSkinTypes();  // Dynamisch die Auswahloptionen laden
     })
     .catch(error => {
         console.error("Fehler beim Laden der config.json:", error);
     });
+
+function loadSkinTypes() {
+    const skinTypeSelect = document.getElementById('skinType');
+    config.skinTypes.forEach(option => {
+        const optionElement = document.createElement('option');
+        optionElement.value = option.value;
+        optionElement.textContent = option.name;
+        skinTypeSelect.appendChild(optionElement);
+    });
+}
+
+document.getElementById('loadSkinBtn').addEventListener('click', getSkin);
 
 function getSkin() {
     const username = document.getElementById('username').value;
@@ -86,3 +99,4 @@ function downloadSkin() {
     link.download = 'minecraft_head.png';
     link.click();
 }
+
