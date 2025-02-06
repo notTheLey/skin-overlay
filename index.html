@@ -8,26 +8,44 @@
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            background: #282c34;
+            background: #1e1e1e;
             color: white;
+            margin: 0;
+            padding: 20px;
         }
-        input, button, select {
-            margin: 10px;
-            padding: 10px;
-            border-radius: 5px;
+        h1 {
+            color: #61dafb;
+            margin-bottom: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        button, select {
+            padding: 10px 20px;
             border: none;
-        }
-        button {
+            border-radius: 5px;
             background: #61dafb;
+            color: #1e1e1e;
             cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s ease;
         }
-        button:hover {
+        button:hover, select:hover {
             background: #21a1f1;
         }
         canvas {
-            margin-top: 20px;
-            border: 2px solid white;
+            border: 2px solid #61dafb;
             background: #000;
+            margin-top: 20px;
         }
         .loader {
             border: 4px solid #f3f3f3;
@@ -43,16 +61,33 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        .download-btn {
+            background: #4CAF50;
+            margin-top: 20px;
+        }
+        .download-btn:hover {
+            background: #45a049;
+        }
     </style>
 </head>
 <body>
     <h1>Minecraft Skin Overlay Generator</h1>
-    <button onclick="loadSkin()">Skin Hochladen</button>
-    <select id="overlaySelect"></select>
-    <div id="loader" class="loader"></div>
-    <canvas id="canvas" width="64" height="64"></canvas>
+    <div class="container">
+        <div class="controls">
+            <button onclick="loadSkin()">Skin Hochladen</button>
+            <select id="overlaySelect"></select>
+            <button onclick="startOverlay()">Starten</button>
+            <button class="download-btn" onclick="downloadSkin()" disabled>Download</button>
+        </div>
+        <div id="loader" class="loader"></div>
+        <canvas id="canvas" width="64" height="64"></canvas>
+    </div>
 
     <script>
+        let skinImage = null; // Hochgeladener Skin
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d');
+
         // Overlays aus der config.json laden
         async function fetchOverlays() {
             try {
@@ -89,8 +124,15 @@
 
                 try {
                     // Skin als Bild laden
-                    const skinUrl = URL.createObjectURL(file);
-                    await drawSkinWithOverlay(skinUrl);
+                    skinImage = new Image();
+                    skinImage.src = URL.createObjectURL(file);
+                    await new Promise((resolve) => {
+                        skinImage.onload = resolve;
+                    });
+
+                    // Skin auf den Canvas zeichnen
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(skinImage, 0, 0, 64, 64);
                 } catch (error) {
                     alert('Fehler beim Laden des Skins: ' + error.message);
                 } finally {
@@ -103,32 +145,44 @@
             fileInput.click();
         }
 
-        // Funktion zum Zeichnen des Skins mit Overlay
-        async function drawSkinWithOverlay(skinUrl) {
+        // Funktion zum Anwenden des Overlays
+        async function startOverlay() {
+            if (!skinImage) return alert('Bitte zuerst einen Skin hochladen!');
+
             const overlayPath = document.getElementById('overlaySelect').value;
-            const canvas = document.getElementById('canvas');
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (!overlayPath) return alert('Bitte ein Overlay auswählen!');
 
-            // Skin zeichnen
-            const skin = new Image();
-            skin.src = skinUrl;
-            await new Promise((resolve) => {
-                skin.onload = resolve;
-            });
+            // Ladeanzeige anzeigen
+            const loader = document.getElementById('loader');
+            loader.style.display = 'block';
 
-            // Skin auf den Canvas zeichnen (64x64)
-            ctx.drawImage(skin, 0, 0, 64, 64);
+            try {
+                // Overlay laden
+                const overlay = new Image();
+                overlay.src = overlayPath;
+                await new Promise((resolve) => {
+                    overlay.onload = resolve;
+                });
 
-            // Overlay zeichnen
-            const overlay = new Image();
-            overlay.src = overlayPath;
-            await new Promise((resolve) => {
-                overlay.onload = resolve;
-            });
+                // Overlay auf den Canvas zeichnen
+                ctx.drawImage(overlay, 0, 0, 64, 64);
 
-            // Overlay auf den Canvas zeichnen
-            ctx.drawImage(overlay, 0, 0, 64, 64);
+                // Download-Button aktivieren
+                document.querySelector('.download-btn').disabled = false;
+            } catch (error) {
+                alert('Fehler beim Laden des Overlays: ' + error.message);
+            } finally {
+                // Ladeanzeige ausblenden
+                loader.style.display = 'none';
+            }
+        }
+
+        // Funktion zum Herunterladen des Skins
+        function downloadSkin() {
+            const link = document.createElement('a');
+            link.download = 'minecraft-skin-with-overlay.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
         }
 
         // Overlays beim Laden der Seite abrufen
