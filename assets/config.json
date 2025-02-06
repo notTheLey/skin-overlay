@@ -1,5 +1,5 @@
 {
-  "overlayPaths": {
+  "overlays": {
     "Player": "assets/player-overlay.png",
     "Gamemaster": "assets/gamemaster-overlay.png",
     "Worker": "assets/worker-owerlay.png"
