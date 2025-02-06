@@ -5,88 +5,114 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minecraft Skin Overlay</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background: #282c34; color: white; }
-        input, button, select { margin: 10px; padding: 10px; border-radius: 5px; border: none; }
-        button { background: #61dafb; cursor: pointer; }
-        button:hover { background: #21a1f1; }
-        canvas { margin-top: 20px; border: 2px solid white; background: #000; }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #282c34;
+            color: white;
+        }
+        input, button, select {
+            margin: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+        }
+        button {
+            background: #61dafb;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #21a1f1;
+        }
+        canvas {
+            margin-top: 20px;
+            border: 2px solid white;
+            background: #000;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
     <h1>Minecraft Skin Overlay Generator</h1>
-    <input type="text" id="playerName" placeholder="Spielername eingeben">
-    <button onclick="loadSkin()">Skin Laden</button>
-    <select id="overlaySelect"></select>
-    <div id="loader" class="loader" style="display: none;"></div>
+    <button onclick="loadSkin()">Skin Hochladen</button>
+    <select id="overlaySelect">
+        <option value="assets/overlay1.png">Overlay 1</option>
+        <option value="assets/overlay2.png">Overlay 2</option>
+    </select>
+    <div id="loader" class="loader"></div>
     <canvas id="canvas" width="64" height="64"></canvas>
 
     <script>
-        async function fetchOverlays() {
-            const response = await fetch('assets/config.json');
-            const config = await response.json();
-            const select = document.getElementById('overlaySelect');
-            select.innerHTML = '';
-            config.overlays.forEach(overlay => {
-                let option = document.createElement('option');
-                option.value = overlay.path;
-                option.textContent = overlay.name;
-                select.appendChild(option);
-            });
+        // Funktion zum Laden des Skins
+        async function loadSkin() {
+            // Dateiauswahl-Dialog erstellen
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/png'; // Nur PNG-Dateien erlauben
+            fileInput.onchange = async (event) => {
+                const file = event.target.files[0];
+                if (!file) return alert('Keine Datei ausgewählt!');
+
+                // Ladeanzeige anzeigen
+                const loader = document.getElementById('loader');
+                loader.style.display = 'block';
+
+                try {
+                    // Skin als Bild laden
+                    const skinUrl = URL.createObjectURL(file);
+                    await drawSkinWithOverlay(skinUrl);
+                } catch (error) {
+                    alert('Fehler beim Laden des Skins: ' + error.message);
+                } finally {
+                    // Ladeanzeige ausblenden
+                    loader.style.display = 'none';
+                }
+            };
+
+            // Dateiauswahl-Dialog öffnen
+            fileInput.click();
         }
 
-        async function loadSkin() {
-    const playerName = document.getElementById('playerName').value.trim();
-    if (!playerName) return alert('Spielername eingeben!');
-
-    // Ladeanzeige anzeigen
-    const loader = document.getElementById('loader');
-    loader.style.display = 'block';
-
-    try {
-        // UUID des Spielers von Crafatar abrufen
-        const uuidResponse = await fetch(`https://crafatar.com/users/${playerName}`);
-        if (!uuidResponse.ok) throw new Error('Spieler nicht gefunden!');
-        const uuid = await uuidResponse.text();
-
-        // Skin von Crafatar laden
-        const skinUrl = `https://crafatar.com/skins/${uuid}`;
-        await drawSkinWithOverlay(skinUrl);
-    } catch (error) {
-        alert(error.message);
-    } finally {
-        // Ladeanzeige ausblenden
-        loader.style.display = 'none';
-    }
-}
-
+        // Funktion zum Zeichnen des Skins mit Overlay
         async function drawSkinWithOverlay(skinUrl) {
             const overlayPath = document.getElementById('overlaySelect').value;
             const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+            // Skin zeichnen
             const skin = new Image();
-            skin.crossOrigin = 'anonymous';
             skin.src = skinUrl;
             await new Promise((resolve) => {
                 skin.onload = resolve;
             });
 
-            ctx.drawImage(skin, 8, 8, 16, 16, 0, 0, 64, 64);
+            // Skin auf den Canvas zeichnen (64x64)
+            ctx.drawImage(skin, 0, 0, 64, 64);
 
+            // Overlay zeichnen
             const overlay = new Image();
-            overlay.crossOrigin = 'anonymous';
             overlay.src = overlayPath;
             await new Promise((resolve) => {
                 overlay.onload = resolve;
             });
 
+            // Overlay auf den Canvas zeichnen
             ctx.drawImage(overlay, 0, 0, 64, 64);
         }
-
-        fetchOverlays();
     </script>
 </body>
 </html>
