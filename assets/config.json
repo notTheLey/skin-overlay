@@ -1,12 +1,7 @@
 {
-  "overlays": {
-    "Player": "assets/player-overlay.png",
-    "Gamemaster": "assets/gamemaster-overlay.png",
-    "Worker": "assets/worker-owerlay.png"
-  },
-  "headDimensions": {
-    "width": 16,
-    "height": 16
-  },
-  "skinUrlBase": "https://crafatar.com/skins/"
+    "overlays": [
+        { "name": "Player", "path": "/skin-overlay/assets.png" },
+        { "name": "Worker", "path": "/skin-overlay/assets/bandana.png" },
+        { "name": "Gamemaster", "path": "/skin-overlay/assets/overlays/sunglasses.png" }
+    ]
 }
