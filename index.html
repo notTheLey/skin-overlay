@@ -3,214 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minecraft Skin Viewer (Squid Game)</title>
+    <title>Minecraft Skin Viewer - Squid Game</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
-        }
-
         body {
-            background-color: #111;
-            color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            flex-direction: column;
-        }
-
-        .container {
+            background-color: #121212;
+            color: #ff007f;
+            font-family: Arial, sans-serif;
             text-align: center;
-            background: linear-gradient(145deg, #000000, #1a1a1a);
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(255, 0, 102, 0.5);
-            width: 100%;
-            max-width: 400px;
         }
-
-        h1 {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: #ff0066;
+        .container {
+            margin-top: 50px;
         }
-
-        .input-container {
-            margin-bottom: 15px;
-        }
-
-        input, select {
+        input, select, button {
             padding: 10px;
-            width: 100%;
-            border-radius: 5px;
-            border: 2px solid #ff0066;
-            background-color: #222;
-            color: white;
-            font-size: 16px;
-            outline: none;
-        }
-
-        button {
-            padding: 15px;
-            width: 100%;
+            margin: 10px;
             border: none;
             border-radius: 5px;
-            cursor: pointer;
-            font-size: 18px;
-            background: #ff0066;
+            font-size: 16px;
+        }
+        button {
+            background-color: #ff007f;
             color: white;
-            transition: 0.3s;
+            cursor: pointer;
         }
-
         button:hover {
-            background: #e6005c;
+            background-color: #d6006b;
         }
-
-        #skinDisplay {
+        canvas {
             margin-top: 20px;
-        }
-
-        #skinImage {
-            max-width: 100%;
-            border-radius: 5px;
-            box-shadow: 0 0 15px rgba(255, 0, 102, 0.8);
-        }
-
-        #downloadBtn {
-            margin-top: 20px;
-            background: #00bcd4;
-        }
-
-        #downloadBtn:hover {
-            background: #0097a7;
+            border: 2px solid #ff007f;
         }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <h1>Minecraft Skin Viewer - Squid Game Style</h1>
-        
-        <div class="input-container">
-            <label for="username">Minecraft Name:</label>
-            <input type="text" id="username" placeholder="Minecraft Name">
-        </div>
-
-        <div class="input-container">
-            <label for="skinType">Wähle Skin Typ:</label>
-            <select id="skinType"></select>
-        </div>
-        
-        <button id="loadSkinBtn">Skin anzeigen</button>
-
-        <div id="skinDisplay">
-            <img id="skinImage" src="" alt="Minecraft Skin">
-        </div>
-
-        <button id="downloadBtn" style="display:none;" onclick="downloadSkin()">Herunterladen</button>
+        <h1>Minecraft Skin Viewer - Squid Game</h1>
+        <input type="text" id="playerName" placeholder="Minecraft-Name eingeben">
+        <select id="overlayType">
+            <option value="player">Spieler</option>
+            <option value="worker">Teamler</option>
+        </select>
+        <button onclick="loadSkin()">Skin anzeigen</button>
+        <button onclick="downloadSkin()">Herunterladen</button>
+        <br>
+        <canvas id="skinCanvas" width="64" height="64"></canvas>
     </div>
 
     <script>
-        let config = {};
+        async function loadSkin() {
+            const playerName = document.getElementById('playerName').value;
+            const overlayType = document.getElementById('overlayType').value;
+            const canvas = document.getElementById('skinCanvas');
+            const ctx = canvas.getContext('2d');
 
-        async function loadConfig() {
-            try {
-                const response = await fetch('/skin-overlay/assets/config.json');
-                if (!response.ok) throw new Error(`HTTP Fehler! Status: ${response.status}`);
-                config = await response.json();
-                console.log("Config geladen:", config);
-                loadSkinTypes();
-            } catch (error) {
-                console.error("Fehler beim Laden der config.json:", error);
-                alert("Fehler beim Laden der Konfiguration. Überprüfe die Konsole.");
-            }
-        }
-
-        function loadSkinTypes() {
-            const skinTypeSelect = document.getElementById('skinType');
-            if (!config.skinTypes || config.skinTypes.length === 0) {
-                console.error("Keine Skin-Typen in der config.json gefunden.");
+            if (!playerName) {
+                alert("Bitte gib einen Minecraft-Namen ein!");
                 return;
             }
 
-            skinTypeSelect.innerHTML = "";
-            config.skinTypes.forEach(option => {
-                const optionElement = document.createElement('option');
-                optionElement.value = option.value;
-                optionElement.textContent = option.name;
-                skinTypeSelect.appendChild(optionElement);
-            });
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            loadConfig();
-            document.getElementById('loadSkinBtn').addEventListener('click', getSkin);
-        });
-
-        async function getSkin() {
-            const username = document.getElementById('username').value;
-            const skinType = document.getElementById('skinType').value;
-
-            if (!username) {
-                alert("Bitte gib einen Minecraft Namen ein.");
-                return;
-            }
-
+            // Mojang API: Spieler-UUID abrufen
             try {
-                const response = await fetch(`https://api.mojang.com/users/profiles/minecraft/${username}`);
-                if (!response.ok) throw new Error("Spieler nicht gefunden");
-                const data = await response.json();
-                const skinUrl = `${config.skinUrlBase}${data.id}`;
-                const overlayUrl = config.overlayPaths[skinType];
+                const uuidResponse = await fetch(`https://api.mojang.com/users/profiles/minecraft/${playerName}`);
+                if (!uuidResponse.ok) throw new Error("Spieler nicht gefunden!");
+                const { id: uuid } = await uuidResponse.json();
 
-                extractHeadAndApplyOverlay(skinUrl, overlayUrl);
+                // Skin-URL abrufen
+                const sessionResponse = await fetch(`https://sessionserver.mojang.com/session/minecraft/profile/${uuid}`);
+                const sessionData = await sessionResponse.json();
+                const base64Skin = sessionData.properties.find(p => p.name === "textures").value;
+                const skinURL = JSON.parse(atob(base64Skin)).textures.SKIN.url;
+
+                // Skin & Overlay laden
+                const skinImage = new Image();
+                const overlayImage = new Image();
+
+                skinImage.src = skinURL;
+                overlayImage.src = `assets/${overlayType}-overlay.png`;
+
+                await Promise.all([
+                    new Promise(resolve => skinImage.onload = resolve),
+                    new Promise(resolve => overlayImage.onload = resolve)
+                ]);
+
+                // Kopf zeichnen (Skin-Kopf ist 8x8 auf Position 8x8)
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(skinImage, 8, 8, 8, 8, 0, 0, 64, 64);
+                ctx.drawImage(overlayImage, 0, 0, 64, 64);
+                
             } catch (error) {
-                alert("Fehler beim Abrufen des Skins.");
-                console.error(error);
+                alert("Fehler: " + error.message);
             }
-        }
-
-        function extractHeadAndApplyOverlay(skinUrl, overlayUrl) {
-            const skinImage = document.getElementById('skinImage');
-            const downloadBtn = document.getElementById('downloadBtn');
-
-            const img = new Image();
-            img.crossOrigin = "anonymous";
-            img.onload = function () {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-
-                const headWidth = config.headDimensions.width;
-                const headHeight = config.headDimensions.height;
-
-                canvas.width = headWidth;
-                canvas.height = headHeight;
-
-                ctx.drawImage(img, 8, 8, headWidth, headHeight, 0, 0, headWidth, headHeight);
-
-                const overlay = new Image();
-                overlay.crossOrigin = "anonymous";
-                overlay.onload = function () {
-                    ctx.drawImage(overlay, 0, 0, headWidth, headHeight);
-                    skinImage.src = canvas.toDataURL();
-                    downloadBtn.style.display = 'inline-block';
-                };
-                overlay.src = overlayUrl;
-            };
-            img.src = skinUrl;
         }
 
         function downloadSkin() {
-            const img = document.getElementById('skinImage');
-            if (!img.src) return;
-
+            const canvas = document.getElementById('skinCanvas');
             const link = document.createElement('a');
-            link.href = img.src;
             link.download = 'minecraft_head.png';
+            link.href = canvas.toDataURL('image/png');
             link.click();
         }
     </script>
+
 </body>
 </html>
+
