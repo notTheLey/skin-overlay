@@ -1,0 +1,11 @@
+{
+  "overlayPaths": {
+    "player": "assets/player-skin.png",
+    "team": "assets/team-skin.png"
+  },
+  "headDimensions": {
+    "width": 16,
+    "height": 16
+  },
+  "skinUrlBase": "https://crafatar.com/skins/"
+}
