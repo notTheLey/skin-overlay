@@ -1,7 +1,8 @@
 {
   "overlayPaths": {
-    "player": "assets/player-skin.png",
-    "team": "assets/team-skin.png"
+    "Player": "assets/player-overlay.png",
+    "Gamemaster": "assets/gamemaster-overlay.png",
+    "Worker": "assets/worker-owerlay.png"
   },
   "headDimensions": {
     "width": 16,
