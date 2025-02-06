@@ -37,28 +37,29 @@
         }
 
         async function loadSkin() {
-            const playerName = document.getElementById('playerName').value.trim();
-            if (!playerName) return alert('Spielername eingeben!');
+    const playerName = document.getElementById('playerName').value.trim();
+    if (!playerName) return alert('Spielername eingeben!');
 
-            // Ladeanzeige anzeigen
-            const loader = document.getElementById('loader');
-            loader.style.display = 'block';
+    // Ladeanzeige anzeigen
+    const loader = document.getElementById('loader');
+    loader.style.display = 'block';
 
-            try {
-                // Proxy-Server verwenden, um CORS-Probleme zu umgehen
-                const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-                const response = await fetch(`${proxyUrl}https://api.mojang.com/users/profiles/minecraft/${playerName}`);
-                if (!response.ok) throw new Error('Spieler nicht gefunden!');
-                const { id } = await response.json();
-                const skinUrl = `https://crafatar.com/skins/${id}`;
-                await drawSkinWithOverlay(skinUrl);
-            } catch (error) {
-                alert(error.message);
-            } finally {
-                // Ladeanzeige ausblenden
-                loader.style.display = 'none';
-            }
-        }
+    try {
+        // UUID des Spielers von Crafatar abrufen
+        const uuidResponse = await fetch(`https://crafatar.com/users/${playerName}`);
+        if (!uuidResponse.ok) throw new Error('Spieler nicht gefunden!');
+        const uuid = await uuidResponse.text();
+
+        // Skin von Crafatar laden
+        const skinUrl = `https://crafatar.com/skins/${uuid}`;
+        await drawSkinWithOverlay(skinUrl);
+    } catch (error) {
+        alert(error.message);
+    } finally {
+        // Ladeanzeige ausblenden
+        loader.style.display = 'none';
+    }
+}
 
         async function drawSkinWithOverlay(skinUrl) {
             const overlayPath = document.getElementById('overlaySelect').value;
