@@ -6,40 +6,58 @@
 
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    background-color: #1b1b1b;
+    color: white;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
+    flex-direction: column;
 }
 
 .container {
     text-align: center;
-    background-color: #fff;
-    padding: 20px;
+    background-color: #f44336;
+    padding: 30px;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: 400px;
+}
+
+h1 {
+    color: #fff;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.input-container {
+    margin-bottom: 15px;
 }
 
 input, select {
     padding: 10px;
     margin: 10px 0;
-    width: 200px;
+    width: 100%;
     border-radius: 4px;
-    border: 1px solid #ccc;
+    border: none;
+    font-size: 16px;
 }
 
 button {
-    padding: 10px 20px;
-    background-color: #4CAF50;
+    padding: 15px 20px;
+    background-color: #8bc34a;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    font-size: 18px;
+    width: 100%;
+    margin-top: 20px;
 }
 
 button:hover {
-    background-color: #45a049;
+    background-color: #7cb342;
 }
 
 #skinDisplay {
@@ -53,9 +71,12 @@ button:hover {
 
 #downloadBtn {
     margin-top: 20px;
-    background-color: #007BFF;
+    background-color: #03a9f4;
+    padding: 10px;
+    font-size: 18px;
+    border-radius: 4px;
 }
 
 #downloadBtn:hover {
-    background-color: #0056b3;
+    background-color: #0288d1;
 }
