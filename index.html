@@ -79,7 +79,7 @@
                 const overlayImage = new Image();
 
                 skinImage.src = skinURL;
-                overlayImage.src = `assets/${overlayType}-overlay.png`;
+                overlayImage.src = `/skin-overlay/assets/${overlayType}-overlay.png`;
 
                 await Promise.all([
                     new Promise(resolve => skinImage.onload = resolve),
